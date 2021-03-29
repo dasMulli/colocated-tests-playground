@@ -1,0 +1,5 @@
+<Project>
+  <PropertyGroup>
+    <ExcludeTests Condition="'$(ExcludeTests)' == '' and '$(Configuration)' == 'Release'">True</ExcludeTests>
+  </PropertyGroup>
+</Project>

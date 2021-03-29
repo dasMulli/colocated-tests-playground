@@ -1,0 +1,37 @@
+<Project>
+  <Choose>
+    <When Condition="'$(ExcludeTests)' == 'True'">
+      <PropertyGroup>
+        <DefaultItemExcludes>$(DefaultItemExcludes);**/*.Test$(DefaultLanguageSourceExtension)</DefaultItemExcludes>
+      </PropertyGroup>
+      <PropertyGroup Condition="'$(IsLibrary)' == 'True'">
+        <OutputType>Library</OutputType>
+        <HasRuntimeOutput>False</HasRuntimeOutput>
+        <GenerateProgramFile>False</GenerateProgramFile>
+        <GenerateRuntimeConfigurationFiles>False</GenerateRuntimeConfigurationFiles>
+      </PropertyGroup>
+      <ItemGroup>
+        <None Include="**/*.Test$(DefaultLanguageSourceExtension)" />
+        <Content Remove="$(NuGetPackageRoot)microsoft.testplatform.testhost\**\*" />
+        <None Remove="$(NuGetPackageRoot)xunit.runner.visualstudio\**\*" />
+      </ItemGroup>
+    </When>
+    <Otherwise>
+      <PropertyGroup>
+        <DefineConstants>$(DefineConstants);TestsEnabled</DefineConstants>
+      </PropertyGroup>
+    </Otherwise>
+  </Choose>
+
+  <Target Name="CleanupUnusedPublishArtifacts" AfterTargets="Publish" Condition="'$(ExcludeTests)' == 'True'">
+    <ItemGroup>
+      <ItemsToRemoveAfterPublish Include="@(TraceDataCollectorArtifacts->'$(PublishDir)%(RecursiveDir)%(FileName)%(Extension)')" />
+    </ItemGroup>
+    <Delete Files="@(TraceDataCollectorArtifacts->'$(PublishDir)%(RecursiveDir)%(FileName)%(Extension)')" />
+    <ItemGroup>
+      <PublishSubdirs Include="$([System.IO.Directory]::GetDirectories('$(PublishDir)', '*', System.IO.SearchOption.AllDirectories))" />
+      <PublishSubdirs NumberOfFiles="$([System.IO.Directory]::GetFiles('%(PublishSubdirs.Identity)', '*', System.IO.SearchOption.AllDirectories).get_Length())" />
+    </ItemGroup>        
+    <RemoveDir Directories="@(PublishSubdirs)" Condition="%(NumberOfFiles)=='0'" />
+  </Target>
+</Project>
